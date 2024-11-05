@@ -37,7 +37,7 @@ def main():
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
     
     st.markdown(
-        
+        """
         <style>
         body {
             background-image: url("https://example.com/path-to-your-image.jpg");
@@ -51,13 +51,13 @@ def main():
         /* Move columns to edges of the screen */
         .left-column {
             position: fixed;
-            left: 20px;
+            left: 200px;
             top: 100px;
             width: 200px;
         }
         .right-column {
             position: fixed;
-            right: 20px;
+            right: 200px;
             top: 100px;
             width: 200px;
         }
@@ -67,7 +67,9 @@ def main():
         }
         </style>
         ,
+        
         unsafe_allow_html=True
+        """
     )
 
     st.title("ADSL Subject-Level Streamlit App")
