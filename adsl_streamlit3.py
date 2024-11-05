@@ -25,6 +25,12 @@ def fetch_data_from_github(url):
         st.error("Failed to fetch data from GitHub. Please check the URL.")
         return None
 
+def load_data_from_github(content):
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.xpt') as tmp_file:
+        tmp_file.write(content)
+        tmp_file.seek(0)  # Reset file pointer for reading
+        return load_data(tmp_file)
+
 # Function to create KM plot
 def km_plot(adsl, adtte):
     anl = adsl[
@@ -125,12 +131,12 @@ def main():
     if st.button("Load ADSL from GitHub"):
         adsl_data_content = fetch_data_from_github(github_adsl_url)
         if adsl_data_content:
-            adsl_data = load_data(tempfile.NamedTemporaryFile(delete=False, suffix='.xpt'))
-    
+            adsl_data = load_data_from_github(adsl_data_content)
+
     if st.button("Load ADTTE from GitHub"):
         adtte_data_content = fetch_data_from_github(github_adtte_url)
         if adtte_data_content:
-            adtte_data = load_data(tempfile.NamedTemporaryFile(delete=False, suffix='.xpt'))
+            adtte_data = load_data_from_github(adtte_data_content)
 
     if adsl_file is not None and adtte_file is not None:
         # Load ADSL and ADTTE data from uploaded files
