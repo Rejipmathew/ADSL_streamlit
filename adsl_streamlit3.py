@@ -24,15 +24,25 @@ def fetch_data_from_github(url):
 
 # Streamlit app
 def main():
-    # Set custom CSS for the background color
+    # Set custom CSS for the background image and column spacing
     st.markdown(
         """
         <style>
         body {
-            background-color: #ADD8E6; /* Light blue background */
+            background-image: url("https://example.com/path-to-your-image.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         .reportview-container {
-            background-color: transparent; /* Make the report view transparent to show body color */
+            background: transparent; /* Ensure content background is transparent to show background image */
+        }
+        /* Adjust spacing for columns */
+        .stColumn:nth-child(1) {
+            margin-right: 20px;
+        }
+        .stColumn:nth-child(3) {
+            margin-left: 20px;
         }
         </style>
         """,
@@ -42,7 +52,7 @@ def main():
     st.title("ADSL Subject-Level Streamlit App")
     
     # Create three columns for layout: left for dropdown, center for figure, right for file upload
-    left_column, center_column, right_column = st.columns([1, 2, 1])
+    left_column, center_column, right_column = st.columns([1, 3, 1])
 
     with left_column:
         # Subject Data Selection
