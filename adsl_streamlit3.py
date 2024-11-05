@@ -26,7 +26,7 @@ def fetch_data_from_github(url):
 def main():
     # Set custom CSS for the background image and column spacing
     st.markdown(
-        
+        """
         <style>
         body {
             background-image: url("https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/clinicaltrial_landing.jpg");
@@ -45,6 +45,7 @@ def main():
             margin-left: 20px;
         }
         </style>
+        """
         ,
         unsafe_allow_html=True
     )
