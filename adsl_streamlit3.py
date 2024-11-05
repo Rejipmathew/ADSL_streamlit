@@ -26,117 +26,87 @@ def fetch_data_from_github(url):
 def main():
     # Set custom CSS for the background color and column spacing
     st.markdown(
-    """
-<style>
-.reportview-container .markdown-text-container {
-    font-family: monospace;
-}
-.sidebar .sidebar-content {
-    background-image: linear-gradient(#2e7bcf,#2e7bcf);
-    color: white;
-}
-.Widget>label {
-    color: white;
-    font-family: monospace;
-}
-[class^="st-b"]  {
-    color: white;
-    font-family: monospace;
-}
-.st-bb {
-    background-color: transparent;
-}
-.st-at {
-    background-color: #0c0080;
-}
-footer {
-    font-family: monospace;
-}
-.reportview-container .main footer, .reportview-container .main footer a {
-    color: #0c0080;
-}
-header .decoration {
-    background-image: "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/clinicaltrial_landing.jpg";
-}
-
-</style>
-""",
-    unsafe_allow_html=True,
-)
+        """
+    <style>
+    .reportview-container .markdown-text-container { font-family: monospace; }
+    .sidebar .sidebar-content { background-image: linear-gradient(#2e7bcf,#2e7bcf); color: white; }
+    .Widget>label { color: white; font-family: monospace; }
+    [class^="st-b"]  { color: white; font-family: monospace; }
+    .st-bb { background-color: transparent; }
+    .st-at { background-color: #0c0080; }
+    footer { font-family: monospace; }
+    .reportview-container .main footer, .reportview-container .main footer a { color: #0c0080; }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
 
     st.title("ADSL Subject-Level Streamlit App")
+
+    # Sidebar for navigation
+    page = st.sidebar.radio("Navigation", ["Data Preview", "Visualization"])
+
+    # File uploader
+    uploaded_file = st.sidebar.file_uploader("Upload ADSL .xpt file", type="xpt")
+    github_url = st.sidebar.text_input("GitHub Raw URL for ADSL .xpt file",
+                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
     
-    # Create three columns for layout: left for dropdown, center for figure, right for file upload
-    left_column, center_column, right_column = st.columns([1, 3, 1])
+    if st.sidebar.button("Load from GitHub"):
+        data_content = fetch_data_from_github(github_url)
+        if data_content:
+            uploaded_file = tempfile.NamedTemporaryFile(delete=False)
+            uploaded_file.write(data_content)
+            uploaded_file.seek(0)  # Reset file pointer for reading later
 
-    with left_column:
-        # Subject Data Selection
-        st.subheader("Select Subject Data")
-        subject_choices = {
-            "Age": "AGE",
-            "Baseline BMI": "BMIBL",
-            "Baseline Height": "HEIGHTBL",
-            "Baseline Weight": "WEIGHTBL",
-            "Years of Education": "EDUCLVL"
-        }
-        
-        selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
-
-    with center_column:
-        # Placeholder for the plot
-        st.subheader("Boxplot Visualization")
-        fig_placeholder = st.empty()  # Placeholder for the boxplot
-
-    with right_column:
-        # File uploader
-        st.subheader("Upload ADSL Data or Fetch from GitHub")
-        uploaded_file = st.file_uploader("Upload ADSL .xpt file", type="xpt")
-
-        # Button to load default dataset from GitHub
-        github_url = st.text_input("GitHub Raw URL for ADSL .xpt file", 
-                                    "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
-        
-        if st.button("Load from GitHub"):
-            data_content = fetch_data_from_github(github_url)
-            if data_content:
-                uploaded_file = tempfile.NamedTemporaryFile(delete=False)
-                uploaded_file.write(data_content)
-                uploaded_file.seek(0)  # Reset file pointer for reading later
-
-    # Load data and generate plot after file is uploaded or fetched from GitHub
+    # Load data and render selected page
     if uploaded_file is not None:
-        # Load data from uploaded file or GitHub file
         adsl_data = load_adsl_data(uploaded_file)
 
-        # Display dataframe in the right column (optional)
-        st.write("ADSL Data Preview:")
-        st.dataframe(adsl_data.head())
+        # Data Preview Page
+        if page == "Data Preview":
+            st.header("ADSL Data Preview")
+            st.write("Showing the first few rows of the ADSL dataset.")
+            st.dataframe(adsl_data.head())
 
-        if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
-            subject_column = subject_choices[selected_subject]
-            
-            # Define colors for treatment groups
-            treatment_colors = {
-                'Group 1': 'blue',
-                'Group 2': 'green',
-                'Group 3': 'red'
+        # Visualization Page
+        elif page == "Visualization":
+            st.header("Boxplot Visualization")
+            subject_choices = {
+                "Age": "AGE",
+                "Baseline BMI": "BMIBL",
+                "Baseline Height": "HEIGHTBL",
+                "Baseline Weight": "WEIGHTBL",
+                "Years of Education": "EDUCLVL"
             }
+            
+            selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
 
-            # Generate boxplot using Plotly
-            fig = px.box(
-                adsl_data, 
-                x='TRT01A', 
-                y=subject_column, 
-                title=f"{selected_subject} by Treatment Groups",
-                labels={subject_column: selected_subject, 'TRT01A': 'Treatment'},
-                color='TRT01A',  # Color by treatment group
-                color_discrete_map=treatment_colors,  # Map treatments to colors
-                points='all'  # Show all data points
-            )
-            # Display the figure in the center column
-            fig_placeholder.plotly_chart(fig)
-        else:
-            fig_placeholder.warning(f"{selected_subject} column not found in the data.")
+            if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
+                subject_column = subject_choices[selected_subject]
+                
+                # Define colors for treatment groups
+                treatment_colors = {
+                    'Group 1': 'blue',
+                    'Group 2': 'green',
+                    'Group 3': 'red'
+                }
+
+                # Generate boxplot using Plotly
+                fig = px.box(
+                    adsl_data, 
+                    x='TRT01A', 
+                    y=subject_column, 
+                    title=f"{selected_subject} by Treatment Groups",
+                    labels={subject_column: selected_subject, 'TRT01A': 'Treatment'},
+                    color='TRT01A',  # Color by treatment group
+                    color_discrete_map=treatment_colors,  # Map treatments to colors
+                    points='all'  # Show all data points
+                )
+                st.plotly_chart(fig)
+            else:
+                st.warning(f"{selected_subject} column not found in the data.")
+    else:
+        st.info("Please upload an ADSL .xpt file or load one from GitHub.")
 
 # Run the app
 if __name__ == "__main__":
