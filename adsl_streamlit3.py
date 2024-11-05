@@ -5,6 +5,9 @@ import tempfile
 import requests
 import plotly.express as px
 
+# Predefined GitHub URL for ADSL .xpt file
+GITHUB_URL = "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT"
+
 # Function to load ADSL data from .xpt file
 def load_adsl_data(file):
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
@@ -13,14 +16,14 @@ def load_adsl_data(file):
     df, meta = pyreadstat.read_xport(tmp_file_path)
     return df
 
-# Cached function to fetch the dataset from a GitHub URL
+# Cached function to fetch the dataset from a predefined GitHub URL
 @st.cache_data(ttl=300)  # Cache for 5 minutes
-def fetch_data_from_github(url):
-    response = requests.get(url)
+def fetch_data_from_github():
+    response = requests.get(GITHUB_URL)
     if response.status_code == 200:
         return response.content
     else:
-        st.error("Failed to fetch data from GitHub. Please check the URL.")
+        st.error("Failed to fetch data from GitHub.")
         return None
 
 # Streamlit app
@@ -49,12 +52,10 @@ def main():
 
     # File uploader
     uploaded_file = st.sidebar.file_uploader("Upload ADSL .xpt file", type="xpt")
-    github_url = st.sidebar.text_input("GitHub Raw URL for ADSL .xpt file",
-                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
     
     # Load data from GitHub and cache it
     if st.sidebar.button("Load from GitHub"):
-        data_content = fetch_data_from_github(github_url)
+        data_content = fetch_data_from_github()
         if data_content:
             # Create a temporary file for the downloaded content
             temp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -118,7 +119,13 @@ def main():
                 fig.update_layout(
                     paper_bgcolor="rgba(255, 255, 255, 0.5)",  # Outer background transparent white
                     plot_bgcolor="rgba(255, 255, 255, 0.5)",    # Inner plot background transparent white
-                    font=dict(color="black")  # Set all text elements to black
+                    font=dict(color="black"),  # Set all text elements to black
+                    legend=dict(
+                        orientation="h",
+                        x=0.5,
+                        xanchor="center",
+                        y=-0.2  # Position below the plot
+                    )
                 )
                 
                 st.plotly_chart(fig)
