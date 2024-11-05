@@ -47,13 +47,13 @@ def main():
         /* Move columns to edges of the screen */
         .left-column {
             position: fixed;
-            left: 200px;
+            left: 20px;
             top: 100px;
             width: 200px;
         }
         .right-column {
             position: fixed;
-            right: 200px;
+            right: 20px;
             top: 100px;
             width: 200px;
         }
