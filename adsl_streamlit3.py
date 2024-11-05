@@ -28,15 +28,16 @@ def fetch_and_load_data_from_github(url):
         return None
 
 # Streamlit app
-with open('https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/wave.css') as f:
-    css = f.read()
-    st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+
     
 def main():
     # Set custom CSS for the background image and layout spacing
+    with open('https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/wave.css') as f:
+    css = f.read()
+    st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
     
     st.markdown(
-        """
+        
         <style>
         body {
             background-image: url("https://example.com/path-to-your-image.jpg");
@@ -65,7 +66,7 @@ def main():
             margin-right: 250px;
         }
         </style>
-        """,
+        ,
         unsafe_allow_html=True
     )
 
