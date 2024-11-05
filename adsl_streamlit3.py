@@ -87,6 +87,13 @@ def main():
         if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
             subject_column = subject_choices[selected_subject]
             
+            # Define colors for treatment groups
+            treatment_colors = {
+                'Group 1': 'blue',
+                'Group 2': 'green',
+                'Group 3': 'red'
+            }
+
             # Generate boxplot using Plotly
             fig = px.box(
                 adsl_data, 
@@ -94,7 +101,9 @@ def main():
                 y=subject_column, 
                 title=f"{selected_subject} by Treatment Groups",
                 labels={subject_column: selected_subject, 'TRT01A': 'Treatment'},
-                points='all'  # show all data points
+                color='TRT01A',  # Color by treatment group
+                color_discrete_map=treatment_colors,  # Map treatments to colors
+                points='all'  # Show all data points
             )
             # Display the figure in the center column
             fig_placeholder.plotly_chart(fig)
