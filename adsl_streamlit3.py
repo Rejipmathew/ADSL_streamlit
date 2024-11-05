@@ -115,7 +115,7 @@ def main():
                     points='all'  # Show all data points
                 )
                 
-                # Set background to transparent white and text color to black
+                # Set custom background image for the plot
                 fig.update_layout(
                     paper_bgcolor="rgba(255, 255, 255, 0.5)",  # Outer background transparent white
                     plot_bgcolor="rgba(255, 255, 255, 0.5)",    # Inner plot background transparent white
@@ -125,7 +125,17 @@ def main():
                         x=0.5,
                         xanchor="center",
                         y=-0.2  # Position below the plot
-                    )
+                    ),
+                    images=[
+                        dict(
+                            source="https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/clinicaltrial_landing.jpg",  # Replace with your image URL
+                            xref="paper", yref="paper",
+                            x=0.5, y=0.5,
+                            sizex=1, sizey=1,
+                            opacity=0.2,  # Adjust opacity for better visibility of the plot
+                            layer="below"
+                        )
+                    ]
                 )
                 
                 st.plotly_chart(fig)
