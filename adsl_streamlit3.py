@@ -13,70 +13,63 @@ def load_adsl_data(file):
     df, meta = pyreadstat.read_xport(tmp_file_path)
     return df
 
-# Cache function to fetch and load the dataset from a GitHub URL
-@st.cache_data
-def fetch_and_load_data_from_github(url):
+# Function to fetch the dataset from a GitHub URL
+def fetch_data_from_github(url):
     response = requests.get(url)
     if response.status_code == 200:
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            tmp_file.write(response.content)
-            tmp_file_path = tmp_file.name
-        df, meta = pyreadstat.read_xport(tmp_file_path)
-        return df
+        return response.content
     else:
         st.error("Failed to fetch data from GitHub. Please check the URL.")
         return None
 
 # Streamlit app
-
-    
 def main():
-    # Set custom CSS for the background image and layout spacing
+    # Set custom CSS for the background color and column spacing
     st.markdown(
-        """
-        <style>
-        body {
-            background-image: url("https://example.com/path-to-your-image.jpg");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-        .reportview-container {
-            background: transparent; /* Ensure content background is transparent to show background image */
-        }
-        /* Move columns to edges of the screen */
-        .left-column {
-            position: fixed;
-            left: 20px;
-            top: 100px;
-            width: 200px;
-        }
-        .right-column {
-            position: fixed;
-            right: 20px;
-            top: 100px;
-            width: 200px;
-        }
-        .center-column {
-            margin-left: 250px;
-            margin-right: 250px;
-        }
-        </style>
-        ,
-        
-        unsafe_allow_html=True
-        """
-    )
+    """
+<style>
+.reportview-container .markdown-text-container {
+    font-family: monospace;
+}
+.sidebar .sidebar-content {
+    background-image: linear-gradient(#2e7bcf,#2e7bcf);
+    color: white;
+}
+.Widget>label {
+    color: white;
+    font-family: monospace;
+}
+[class^="st-b"]  {
+    color: white;
+    font-family: monospace;
+}
+.st-bb {
+    background-color: transparent;
+}
+.st-at {
+    background-color: #0c0080;
+}
+footer {
+    font-family: monospace;
+}
+.reportview-container .main footer, .reportview-container .main footer a {
+    color: #0c0080;
+}
+header .decoration {
+    background-image: none;
+}
+
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
     st.title("ADSL Subject-Level Streamlit App")
     
-    # Define layout columns with CSS classes for position adjustments
-    left_column = st.container()
-    center_column = st.container()
-    right_column = st.container()
+    # Create three columns for layout: left for dropdown, center for figure, right for file upload
+    left_column, center_column, right_column = st.columns([1, 3, 1])
 
     with left_column:
-        st.markdown('<div class="left-column">', unsafe_allow_html=True)
         # Subject Data Selection
         st.subheader("Select Subject Data")
         subject_choices = {
@@ -88,17 +81,13 @@ def main():
         }
         
         selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with center_column:
-        st.markdown('<div class="center-column">', unsafe_allow_html=True)
         # Placeholder for the plot
         st.subheader("Boxplot Visualization")
         fig_placeholder = st.empty()  # Placeholder for the boxplot
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with right_column:
-        st.markdown('<div class="right-column">', unsafe_allow_html=True)
         # File uploader
         st.subheader("Upload ADSL Data or Fetch from GitHub")
         uploaded_file = st.file_uploader("Upload ADSL .xpt file", type="xpt")
@@ -108,19 +97,18 @@ def main():
                                     "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
         
         if st.button("Load from GitHub"):
-            adsl_data = fetch_and_load_data_from_github(github_url)
-            if adsl_data is None:
-                st.warning("Failed to load data from GitHub.")
-        st.markdown('</div>', unsafe_allow_html=True)
+            data_content = fetch_data_from_github(github_url)
+            if data_content:
+                uploaded_file = tempfile.NamedTemporaryFile(delete=False)
+                uploaded_file.write(data_content)
+                uploaded_file.seek(0)  # Reset file pointer for reading later
 
     # Load data and generate plot after file is uploaded or fetched from GitHub
     if uploaded_file is not None:
-        # Load data from uploaded file
+        # Load data from uploaded file or GitHub file
         adsl_data = load_adsl_data(uploaded_file)
 
-    # If data is loaded, display it and create plot
-    if 'adsl_data' in locals() and adsl_data is not None:
-        # Display dataframe preview
+        # Display dataframe in the right column (optional)
         st.write("ADSL Data Preview:")
         st.dataframe(adsl_data.head())
 
