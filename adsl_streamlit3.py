@@ -119,7 +119,7 @@ def main():
                 fig.update_layout(
                     paper_bgcolor="rgba(255, 255, 255, 0.5)",  # Outer background transparent white
                     plot_bgcolor="rgba(255, 255, 255, 0.5)",    # Inner plot background transparent white
-                    font=dict(color="black"),  # Set all text elements to black
+                    font=dict(color="dark blue"),  # Set all text elements to black
                     legend=dict(
                         orientation="h",
                         x=0.5,
