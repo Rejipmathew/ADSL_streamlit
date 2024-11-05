@@ -24,7 +24,7 @@ def fetch_data_from_github(url):
 
 # Streamlit app
 def main():
-    # Set custom CSS for the background image and column spacing
+    # Set custom CSS for the background image and layout spacing
     st.markdown(
         """
         <style>
@@ -37,25 +37,37 @@ def main():
         .reportview-container {
             background: transparent; /* Ensure content background is transparent to show background image */
         }
-        /* Adjust spacing for columns */
-        .stColumn:nth-child(1) {
-            margin-right: 30px;
+        /* Move columns to edges of the screen */
+        .left-column {
+            position: fixed;
+            left: 20px;
+            top: 100px;
+            width: 200px;
         }
-        .stColumn:nth-child(3) {
-            margin-left: 30px;
+        .right-column {
+            position: fixed;
+            right: 20px;
+            top: 100px;
+            width: 200px;
+        }
+        .center-column {
+            margin-left: 250px;
+            margin-right: 250px;
         }
         </style>
-        """
-        ,
+        """,
         unsafe_allow_html=True
     )
 
     st.title("ADSL Subject-Level Streamlit App")
     
-    # Create three columns for layout: left for dropdown, center for figure, right for file upload
-    left_column, center_column, right_column = st.columns([1, 3, 1])
+    # Define layout columns with CSS classes for position adjustments
+    left_column = st.container()
+    center_column = st.container()
+    right_column = st.container()
 
     with left_column:
+        st.markdown('<div class="left-column">', unsafe_allow_html=True)
         # Subject Data Selection
         st.subheader("Select Subject Data")
         subject_choices = {
@@ -67,13 +79,17 @@ def main():
         }
         
         selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with center_column:
+        st.markdown('<div class="center-column">', unsafe_allow_html=True)
         # Placeholder for the plot
         st.subheader("Boxplot Visualization")
         fig_placeholder = st.empty()  # Placeholder for the boxplot
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with right_column:
+        st.markdown('<div class="right-column">', unsafe_allow_html=True)
         # File uploader
         st.subheader("Upload ADSL Data or Fetch from GitHub")
         uploaded_file = st.file_uploader("Upload ADSL .xpt file", type="xpt")
@@ -88,6 +104,7 @@ def main():
                 uploaded_file = tempfile.NamedTemporaryFile(delete=False)
                 uploaded_file.write(data_content)
                 uploaded_file.seek(0)  # Reset file pointer for reading later
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Load data and generate plot after file is uploaded or fetched from GitHub
     if uploaded_file is not None:
