@@ -66,7 +66,7 @@ def main():
 
         # Button to load default dataset from GitHub
         github_url = st.text_input("GitHub Raw URL for ADSL .xpt file", 
-                                    "https://github.com/Rejipmathew/ADSL_streamlit/blob/main/ADSL.XPT")
+                                    "https://raw.githubusercontent.com//Rejipmathew/ADSL_streamlit/main/ADSL.XPT")
         
         if st.button("Load from GitHub"):
             data_content = fetch_data_from_github(github_url)
