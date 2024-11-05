@@ -44,8 +44,8 @@ def main():
 
     st.title("ADSL Subject-Level Streamlit App")
 
-    # Sidebar for navigation
-    page = st.sidebar.radio("Navigation", ["Data Preview", "Visualization"])
+    # Sidebar for navigation with "Visualization" as the default option
+    page = st.sidebar.radio("Navigation", ["Data Preview", "Visualization"], index=1)
 
     # File uploader
     uploaded_file = st.sidebar.file_uploader("Upload ADSL .xpt file", type="xpt")
@@ -113,6 +113,13 @@ def main():
                     color_discrete_map=treatment_colors,  # Map treatments to colors
                     points='all'  # Show all data points
                 )
+                
+                # Set background color to white
+                fig.update_layout(
+                    paper_bgcolor="white",  # Set outer background to white
+                    plot_bgcolor="white"  # Set inner plot background to white
+                )
+                
                 st.plotly_chart(fig)
             else:
                 st.warning(f"{selected_subject} column not found in the data.")
