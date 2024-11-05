@@ -30,6 +30,7 @@ def fetch_and_load_data_from_github(url):
 # Streamlit app
 def main():
     # Set custom CSS for the background image and layout spacing
+    
     st.markdown(
         """
         <style>
