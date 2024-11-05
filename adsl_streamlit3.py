@@ -13,11 +13,16 @@ def load_adsl_data(file):
     df, meta = pyreadstat.read_xport(tmp_file_path)
     return df
 
-# Function to fetch the dataset from a GitHub URL
-def fetch_data_from_github(url):
+# Cache function to fetch and load the dataset from a GitHub URL
+@st.cache_data
+def fetch_and_load_data_from_github(url):
     response = requests.get(url)
     if response.status_code == 200:
-        return response.content
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_file.write(response.content)
+            tmp_file_path = tmp_file.name
+        df, meta = pyreadstat.read_xport(tmp_file_path)
+        return df
     else:
         st.error("Failed to fetch data from GitHub. Please check the URL.")
         return None
@@ -29,7 +34,7 @@ def main():
         """
         <style>
         body {
-            background-image: url("https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/clinicaltrial_landing.jpg");
+            background-image: url("https://example.com/path-to-your-image.jpg");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -99,19 +104,19 @@ def main():
                                     "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
         
         if st.button("Load from GitHub"):
-            data_content = fetch_data_from_github(github_url)
-            if data_content:
-                uploaded_file = tempfile.NamedTemporaryFile(delete=False)
-                uploaded_file.write(data_content)
-                uploaded_file.seek(0)  # Reset file pointer for reading later
+            adsl_data = fetch_and_load_data_from_github(github_url)
+            if adsl_data is None:
+                st.warning("Failed to load data from GitHub.")
         st.markdown('</div>', unsafe_allow_html=True)
 
     # Load data and generate plot after file is uploaded or fetched from GitHub
     if uploaded_file is not None:
-        # Load data from uploaded file or GitHub file
+        # Load data from uploaded file
         adsl_data = load_adsl_data(uploaded_file)
 
-        # Display dataframe in the right column (optional)
+    # If data is loaded, display it and create plot
+    if 'adsl_data' in locals() and adsl_data is not None:
+        # Display dataframe preview
         st.write("ADSL Data Preview:")
         st.dataframe(adsl_data.head())
 
