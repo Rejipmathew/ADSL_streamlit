@@ -33,7 +33,7 @@ def fetch_and_load_data_from_github(url):
 def main():
     # Set custom CSS for the background image and layout spacing
     with open('https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/wave.css') as f:
-    css = f.read()
+     css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
     
     st.markdown(
