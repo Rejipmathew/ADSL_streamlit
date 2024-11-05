@@ -133,7 +133,7 @@ def main():
                             x=0.5, y=0.5,
                             sizex=1, sizey=1,
                             opacity=0.05,  # Adjust opacity for better visibility of the plot
-                            layer="below"
+                            layer="above"
                         )
                     ]
                 )
