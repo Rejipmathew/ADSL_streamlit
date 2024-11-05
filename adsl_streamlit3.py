@@ -28,8 +28,11 @@ def main():
     st.markdown(
         """
         <style>
-        .reportview-container {
+        body {
             background-color: #ADD8E6; /* Light blue background */
+        }
+        .reportview-container {
+            background-color: transparent; /* Make the report view transparent to show body color */
         }
         </style>
         """,
