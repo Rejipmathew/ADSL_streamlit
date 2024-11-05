@@ -114,10 +114,11 @@ def main():
                     points='all'  # Show all data points
                 )
                 
-                # Set background color to transparent white
+                # Set background to transparent white and text color to black
                 fig.update_layout(
                     paper_bgcolor="rgba(255, 255, 255, 0.5)",  # Outer background transparent white
-                    plot_bgcolor="rgba(255, 255, 255, 0.5)"    # Inner plot background transparent white
+                    plot_bgcolor="rgba(255, 255, 255, 0.5)",    # Inner plot background transparent white
+                    font=dict(color="black")  # Set all text elements to black
                 )
                 
                 st.plotly_chart(fig)
