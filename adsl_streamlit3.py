@@ -29,7 +29,7 @@ def main():
         """
         <style>
         body {
-            background-image: url("https://example.com/path-to-your-image.jpg");
+            background-image: url("https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/clinicaltrial_landing.jpg");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
