@@ -13,7 +13,8 @@ def load_adsl_data(file):
     df, meta = pyreadstat.read_xport(tmp_file_path)
     return df
 
-# Function to fetch the dataset from a GitHub URL
+# Cached function to fetch the dataset from a GitHub URL
+@st.cache_data(ttl=300)  # Cache for 5 minutes
 def fetch_data_from_github(url):
     response = requests.get(url)
     if response.status_code == 200:
