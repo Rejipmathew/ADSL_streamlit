@@ -56,7 +56,7 @@ footer {
     color: #0c0080;
 }
 header .decoration {
-    background-image: none;
+    background-image: "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/clinicaltrial_landing.jpg";
 }
 
 </style>
