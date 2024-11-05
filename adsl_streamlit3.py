@@ -39,10 +39,10 @@ def main():
         }
         /* Adjust spacing for columns */
         .stColumn:nth-child(1) {
-            margin-right: 20px;
+            margin-right: 30px;
         }
         .stColumn:nth-child(3) {
-            margin-left: 20px;
+            margin-left: 30px;
         }
         </style>
         """
