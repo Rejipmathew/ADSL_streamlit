@@ -52,16 +52,26 @@ def main():
     github_url = st.sidebar.text_input("GitHub Raw URL for ADSL .xpt file",
                                        "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
     
+    # Load data from GitHub and cache it
     if st.sidebar.button("Load from GitHub"):
         data_content = fetch_data_from_github(github_url)
         if data_content:
-            uploaded_file = tempfile.NamedTemporaryFile(delete=False)
-            uploaded_file.write(data_content)
-            uploaded_file.seek(0)  # Reset file pointer for reading later
+            # Create a temporary file for the downloaded content
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_file.write(data_content)
+            temp_file.seek(0)  # Reset file pointer for reading later
+            # Load the ADSL data and cache it
+            adsl_data = load_adsl_data(temp_file)
+            st.session_state.adsl_data = adsl_data  # Store the data in session state
 
-    # Load data and render selected page
+    # Load data from uploaded file if available
     if uploaded_file is not None:
         adsl_data = load_adsl_data(uploaded_file)
+        st.session_state.adsl_data = adsl_data  # Store the data in session state
+
+    # Render selected page if data is available
+    if 'adsl_data' in st.session_state:
+        adsl_data = st.session_state.adsl_data
 
         # Data Preview Page
         if page == "Data Preview":
