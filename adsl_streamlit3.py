@@ -118,6 +118,9 @@ def main():
 
     st.title("ADSL and ADTTE Data Visualization App")
     
+    # Navigation sidebar
+    nav_option = st.sidebar.selectbox("Select an option", ["Raw Data", "Visualization", "Kaplan-Meier Curve"])
+
     # File uploader for ADSL and ADTTE data
     adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
     adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
@@ -128,6 +131,7 @@ def main():
     github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
                                        "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
 
+    # Load data from GitHub if the button is clicked
     if st.button("Load ADSL from GitHub"):
         adsl_data_content = fetch_data_from_github(github_adsl_url)
         if adsl_data_content:
@@ -138,51 +142,60 @@ def main():
         if adtte_data_content:
             adtte_data = load_data_from_github(adtte_data_content)
 
+    # Load ADSL and ADTTE data from uploaded files
     if adsl_file is not None and adtte_file is not None:
-        # Load ADSL and ADTTE data from uploaded files
         adsl_data = load_data(adsl_file)
         adtte_data = load_data(adtte_file)
 
     if 'adsl_data' not in locals() or 'adtte_data' not in locals():
         return
 
-    # Create subject data selection and boxplot visualization
-    st.subheader("Boxplot Visualization")
-    subject_choices = {
-        "Age": "AGE",
-        "Baseline BMI": "BMIBL",
-        "Baseline Height": "HEIGHTBL",
-        "Baseline Weight": "WEIGHTBL",
-        "Years of Education": "EDUCLVL"
-    }
-    
-    selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
+    # Render content based on selected navigation option
+    if nav_option == "Raw Data":
+        st.subheader("Raw Data Preview")
+        st.write("ADSL Data:")
+        st.dataframe(adsl_data.head())
+        st.write("ADTTE Data:")
+        st.dataframe(adtte_data.head())
 
-    if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
-        subject_column = subject_choices[selected_subject]
-
-        # Define colors for treatment groups
-        treatment_colors = {
-            'Placebo': 'blue',
-            'Xanomeline Low Dose': 'green',
-            'Xanomeline High Dose': 'red'
+    elif nav_option == "Visualization":
+        st.subheader("Boxplot Visualization")
+        subject_choices = {
+            "Age": "AGE",
+            "Baseline BMI": "BMIBL",
+            "Baseline Height": "HEIGHTBL",
+            "Baseline Weight": "WEIGHTBL",
+            "Years of Education": "EDUCLVL"
         }
+        
+        selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
 
-        # Generate boxplot using Plotly
-        fig_box = px.box(
-            adsl_data, 
-            x='TRT01A', 
-            y=subject_column, 
-            title=f"{selected_subject} by Treatment Groups",
-            labels={subject_column: selected_subject, 'TRT01A': 'Treatment'},
-            color='TRT01A',  
-            color_discrete_map=treatment_colors,
-            points='all'
-        )
-        fig_box.update_layout(plot_bgcolor='rgba(255, 255, 255, 0.5)')  # Transparent white background
-        st.plotly_chart(fig_box)
+        if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
+            subject_column = subject_choices[selected_subject]
 
-        # Create and display Kaplan-Meier plot
+            # Define colors for treatment groups
+            treatment_colors = {
+                'Placebo': 'blue',
+                'Xanomeline Low Dose': 'green',
+                'Xanomeline High Dose': 'red'
+            }
+
+            # Generate boxplot using Plotly
+            fig_box = px.box(
+                adsl_data, 
+                x='TRT01A', 
+                y=subject_column, 
+                title=f"{selected_subject} by Treatment Groups",
+                labels={subject_column: selected_subject, 'TRT01A': 'Treatment'},
+                color='TRT01A',  
+                color_discrete_map=treatment_colors,
+                points='all'
+            )
+            fig_box.update_layout(plot_bgcolor='rgba(255, 255, 255, 0.5)')  # Transparent white background
+            st.plotly_chart(fig_box)
+
+    elif nav_option == "Kaplan-Meier Curve":
+        st.subheader("Kaplan-Meier Curve")
         km_fig = km_plot(adsl_data, adtte_data)
         if km_fig is not None:
             st.plotly_chart(km_fig)
