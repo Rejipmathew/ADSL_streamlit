@@ -119,7 +119,7 @@ def main():
     st.title("ADSL and ADTTE Data Visualization App")
     
     # Navigation sidebar
-    nav_option = st.sidebar.selectbox("Select an option", ["Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    nav_option = st.sidebar.checkbox("Select an option", ["Raw Data", "Visualization", "Kaplan-Meier Curve"])
 
     # File uploader for ADSL and ADTTE data
     adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
