@@ -102,6 +102,7 @@ def main():
         st.subheader("Instructions for Using the App")
         st.write("""
         Welcome to the Demographics and KP-Curve CDISC Visualization App!
+        (Select '>' on the top of webpage to view sidebar options)
 
         **Instructions:**
         1. **Upload Files**: You can upload your own ADSL and ADTTE files in XPT format, or load them directly from a GitHub repository.
