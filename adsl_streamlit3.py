@@ -36,9 +36,7 @@ def km_plot(adsl, adtte):
     anl = adsl[
         (adsl['SAFFL'] == "Y") & (adsl['STUDYID'] == "CDISCPILOT01")
     ][['STUDYID', 'USUBJID', 'TRT01A']].merge(
-        adtte[
-            adtte['STUDYID'] == "CDISCPILOT01"
-        ][['STUDYID', 'USUBJID', 'AVAL', 'CNSR', 'PARAM', 'PARAMCD']],
+        adtte[adtte['STUDYID'] == "CDISCPILOT01"][['STUDYID', 'USUBJID', 'AVAL', 'CNSR', 'PARAM', 'PARAMCD']],
         on=['STUDYID', 'USUBJID'],
         how='inner'
     ).assign(
