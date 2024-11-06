@@ -92,7 +92,7 @@ def main():
     if "adtte_data" not in st.session_state:
         st.session_state.adtte_data = None
 
-    st.title("ADSL and ADTTE Data Visualization App")
+    st.title("Demographics and KP-Curve CDISC Visualization")
 
     # Sidebar navigation with radio buttons
     nav_option = st.sidebar.radio("Select an option", ["Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
