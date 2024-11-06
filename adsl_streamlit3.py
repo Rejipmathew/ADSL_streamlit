@@ -95,7 +95,8 @@ def main():
     st.title("Demographics and KP-Curve CDISC Visualization")
 
     # Sidebar navigation with radio buttons
-    nav_option = st.sidebar.radio("Select an option", ["Instructions", "Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    options = ["Instructions", "Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"]
+    nav_option = st.sidebar.radio("Select an option", options)
 
     # Instructions page as the default
     if nav_option == "Instructions":
@@ -119,10 +120,13 @@ def main():
 
         Use the options in the sidebar to navigate between different sections of the app.
         """)
-        return
 
-    # Display file upload section only in the "Upload Files" page
-    if nav_option == "Upload Files":
+        # Next Explore button
+        if st.button("Next Explore"):
+            st.session_state.nav_option = "Upload Files"  # Automatically go to the next section
+
+    # Upload Files page
+    elif nav_option == "Upload Files":
         st.subheader("Load Data from GitHub")
         
         # GitHub URL input for ADSL and ADTTE data
@@ -138,7 +142,7 @@ def main():
                 st.session_state.adsl_data = load_data_from_github(adsl_data_content)
 
         if st.button("Load ADTTE from GitHub"):
-            adtte_data_content = fetch_data_from_github(github_adtte_url)
+            adtte_data_content = fetch_data_from_github(adtte_adtte_url)
             if adtte_data_content:
                 st.session_state.adtte_data = load_data_from_github(adtte_data_content)
 
@@ -154,8 +158,12 @@ def main():
         if adtte_file is not None:
             st.session_state.adtte_data = load_data(adtte_file)
 
-    # Render content based on selected navigation option
-    if nav_option == "Raw Data":
+        # Next Explore button
+        if st.button("Next Explore"):
+            st.session_state.nav_option = "Raw Data"  # Automatically go to the next section
+
+    # Raw Data page
+    elif nav_option == "Raw Data":
         st.subheader("Raw Data Preview")
         if st.session_state.adsl_data is not None and st.session_state.adtte_data is not None:
             st.write("ADSL Data:")
@@ -165,6 +173,11 @@ def main():
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
 
+        # Next Explore button
+        if st.button("Next Explore"):
+            st.session_state.nav_option = "Visualization"  # Automatically go to the next section
+
+    # Visualization page
     elif nav_option == "Visualization":
         st.subheader("Boxplot Visualization")
         if st.session_state.adsl_data is not None:
@@ -204,6 +217,11 @@ def main():
         else:
             st.warning("Please upload or load ADSL data.")
 
+        # Next Explore button
+        if st.button("Next Explore"):
+            st.session_state.nav_option = "Kaplan-Meier Curve"  # Automatically go to the next section
+
+    # Kaplan-Meier Curve page
     elif nav_option == "Kaplan-Meier Curve":
         st.subheader("Kaplan-Meier Curve")
         if st.session_state.adsl_data is not None and st.session_state.adtte_data is not None:
@@ -212,6 +230,8 @@ def main():
                 st.plotly_chart(fig_km)
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
+
+        # No "Next Explore" button on the last page
 
 if __name__ == "__main__":
     main()
