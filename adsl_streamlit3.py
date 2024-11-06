@@ -179,7 +179,7 @@ def main():
                 treatment_colors = {
                     'Placebo': 'blue',
                     'Xanomeline Low Dose': 'green',
-                    'Xanomeline High Dose': 'red'
+                    'Xanomeline High Dose': 'purple'
                 }
 
                 # Generate boxplot using Plotly
