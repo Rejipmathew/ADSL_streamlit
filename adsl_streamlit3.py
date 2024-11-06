@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import pyreadstat
 import tempfile
 import requests
@@ -15,31 +16,20 @@ def load_data(file):
     df, _ = pyreadstat.read_xport(tmp_file_path)
     return df
 
-# Function to fetch the dataset from a GitHub URL with enhanced error handling
+# Function to fetch the dataset from a GitHub URL
 def fetch_data_from_github(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Check for HTTP errors
-        # Verify that the content type is as expected for an XPT file
-        if 'application/octet-stream' in response.headers['Content-Type']:
-            return response.content
-        else:
-            st.error("The URL did not return a valid XPT file. Please check the file format and try again.")
-            return None
-    except requests.exceptions.RequestException as e:
-        st.error(f"Failed to fetch data from GitHub: {e}")
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.content
+    else:
+        st.error("Failed to fetch data from GitHub. Please check the URL.")
         return None
 
-# Function to load data from the GitHub content fetched
 def load_data_from_github(content):
-    try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.xpt') as tmp_file:
-            tmp_file.write(content)
-            tmp_file.seek(0)  # Reset file pointer for reading
-            return load_data(tmp_file)
-    except Exception as e:
-        st.error(f"Failed to load data from GitHub content: {e}")
-        return None
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.xpt') as tmp_file:
+        tmp_file.write(content)
+        tmp_file.seek(0)  # Reset file pointer for reading
+        return load_data(tmp_file)
 
 # Function to create KM plot
 def km_plot(adsl, adtte):
@@ -86,16 +76,74 @@ def km_plot(adsl, adtte):
 
 # Streamlit app
 def main():
-    # Initialize session state for data storage if it does not exist
-    if "adsl_data" not in st.session_state:
-        st.session_state.adsl_data = None
-    if "adtte_data" not in st.session_state:
-        st.session_state.adtte_data = None
+    st.markdown(
+    """
+    <style>
+    .reportview-container .markdown-text-container {
+        font-family: monospace;
+    }
+    .sidebar .sidebar-content {
+        background-image: linear-gradient(#2e7bcf,#2e7bcf);
+        color: white;
+    }
+    .Widget>label {
+        color: white;
+        font-family: monospace;
+    }
+    [class^="st-b"]  {
+        color: white;
+        font-family: monospace;
+    }
+    .st-bb {
+        background-color: transparent;
+    }
+    .st-at {
+        background-color: #0c0080;
+    }
+    footer {
+        font-family: monospace;
+    }
+    .reportview-container .main footer, .reportview-container .main footer a {
+        color: #0c0080;
+    }
+    header .decoration {
+        background-image: "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/clinicaltrial_landing.jpg";
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+    )
 
-    st.title("Demographics and KP-Curve CDISC Visualization")
+    # Landing Page Content
+    if "landing" not in st.session_state:
+        st.session_state["landing"] = True
+    
+    if st.session_state["landing"]:
+        st.title("Welcome to the ADSL and ADTTE Data Visualization App!")
+        st.write("""
+        This app helps you explore and visualize clinical trial data efficiently. You can:
+        
+        1. **Upload your Data**: Upload ADSL and ADTTE files either from your computer or by providing GitHub URLs.
+        2. **View Raw Data**: View the first few rows of the uploaded data.
+        3. **Visualize Data**: Create boxplots based on various subject attributes like Age, Baseline BMI, etc.
+        4. **Kaplan-Meier Curve**: View survival analysis for each treatment group.
+
+        ### How to Use:
+        - **Step 1: Upload or Load Data**: Choose either to upload files or load them directly from GitHub.
+        - **Step 2: View Raw Data**: Check the data preview once the files are uploaded.
+        - **Step 3: Visualize Data**: Select an attribute to visualize using boxplots.
+        - **Step 4: Kaplan-Meier Plot**: Generate survival curves based on the data.
+
+        To start, click the **"Upload Files"** button in the sidebar to upload or load your data.
+        """)
+        
+        st.button("Start Exploring", on_click=lambda: st.session_state.update({"landing": False}))
 
     # Sidebar navigation with radio buttons
     nav_option = st.sidebar.radio("Select an option", ["Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
+
+    # Initialize variables for data
+    adsl_data, adtte_data = None, None
 
     # Display file upload section only in the "Upload Files" page
     if nav_option == "Upload Files":
@@ -115,33 +163,32 @@ def main():
         if st.button("Load ADSL from GitHub"):
             adsl_data_content = fetch_data_from_github(github_adsl_url)
             if adsl_data_content:
-                st.session_state.adsl_data = load_data_from_github(adsl_data_content)
+                adsl_data = load_data_from_github(adsl_data_content)
 
         if st.button("Load ADTTE from GitHub"):
-            adtte_data_content = fetch_data_from_github(github_adtte_url)
+            adtte_data_content = fetch_data_from_github(adtte_adtte_url)
             if adtte_data_content:
-                st.session_state.adtte_data = load_data_from_github(adtte_data_content)
+                adtte_data = load_data_from_github(adtte_data_content)
 
         # Load ADSL and ADTTE data from uploaded files
-        if adsl_file is not None:
-            st.session_state.adsl_data = load_data(adsl_file)
-        if adtte_file is not None:
-            st.session_state.adtte_data = load_data(adtte_file)
+        if adsl_file is not None and adtte_file is not None:
+            adsl_data = load_data(adsl_file)
+            adtte_data = load_data(adtte_file)
 
     # Render content based on selected navigation option
     if nav_option == "Raw Data":
         st.subheader("Raw Data Preview")
-        if st.session_state.adsl_data is not None and st.session_state.adtte_data is not None:
+        if adsl_data is not None and adtte_data is not None:
             st.write("ADSL Data:")
-            st.dataframe(st.session_state.adsl_data.head())
+            st.dataframe(adsl_data.head())
             st.write("ADTTE Data:")
-            st.dataframe(st.session_state.adtte_data.head())
+            st.dataframe(adtte_data.head())
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
 
     elif nav_option == "Visualization":
         st.subheader("Boxplot Visualization")
-        if st.session_state.adsl_data is not None:
+        if adsl_data is not None:
             subject_choices = {
                 "Age": "AGE",
                 "Baseline BMI": "BMIBL",
@@ -152,19 +199,19 @@ def main():
             
             selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
 
-            if selected_subject and subject_choices[selected_subject] in st.session_state.adsl_data.columns:
+            if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
                 subject_column = subject_choices[selected_subject]
 
                 # Define colors for treatment groups
                 treatment_colors = {
                     'Placebo': 'blue',
                     'Xanomeline Low Dose': 'green',
-                    'Xanomeline High Dose': 'purple'
+                    'Xanomeline High Dose': 'red'
                 }
 
                 # Generate boxplot using Plotly
                 fig_box = px.box(
-                    st.session_state.adsl_data, 
+                    adsl_data, 
                     x='TRT01A', 
                     y=subject_column, 
                     title=f"{selected_subject} by Treatment Groups",
@@ -180,12 +227,13 @@ def main():
 
     elif nav_option == "Kaplan-Meier Curve":
         st.subheader("Kaplan-Meier Curve")
-        if st.session_state.adsl_data is not None and st.session_state.adtte_data is not None:
-            fig_km = km_plot(st.session_state.adsl_data, st.session_state.adtte_data)
-            if fig_km:
-                st.plotly_chart(fig_km)
+        if adsl_data is not None and adtte_data is not None:
+            km_fig = km_plot(adsl_data, adtte_data)
+            if km_fig is not None:
+                st.plotly_chart(km_fig)
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
 
+# Run the app
 if __name__ == "__main__":
     main()
