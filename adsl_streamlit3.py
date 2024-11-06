@@ -116,91 +116,93 @@ def main():
     unsafe_allow_html=True,
     )
 
-    st.title("ADSL and ADTTE Data Visualization App")
-    
-    # Navigation sidebar
-    nav_option = st.sidebar.selectbox("Select an option", ["Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    st.title("Clinical Trial Subject level Data Visualization App")
 
-    # File uploader for ADSL and ADTTE data
-    adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
-    adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
+    # Sidebar navigation with radio buttons
+    nav_option = st.sidebar.radio("Select an option", ["Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
 
-    # GitHub URL input for ADSL and ADTTE data
-    github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
+    # Display file upload section only in the "Upload Files" page
+    if nav_option == "Upload Files":
+        st.subheader("Upload ADSL and ADTTE Files")
+        
+        # File upload for ADSL and ADTTE
+        adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
+        adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
+
+        # GitHub URL input for ADSL and ADTTE data
+        github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
-    github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
+        github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
                                        "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
 
-    # Initialize data variables
-    adsl_data, adtte_data = None, None
+        # Load data from GitHub if the button is clicked
+        if st.button("Load ADSL from GitHub"):
+            adsl_data_content = fetch_data_from_github(github_adsl_url)
+            if adsl_data_content:
+                adsl_data = load_data_from_github(adsl_data_content)
 
-    # Load data from GitHub if the button is clicked
-    if st.button("Load ADSL from GitHub"):
-        adsl_data_content = fetch_data_from_github(github_adsl_url)
-        if adsl_data_content:
-            adsl_data = load_data_from_github(adsl_data_content)
+        if st.button("Load ADTTE from GitHub"):
+            adtte_data_content = fetch_data_from_github(github_adtte_url)
+            if adtte_data_content:
+                adtte_data = load_data_from_github(adtte_data_content)
 
-    if st.button("Load ADTTE from GitHub"):
-        adtte_data_content = fetch_data_from_github(github_adtte_url)
-        if adtte_data_content:
-            adtte_data = load_data_from_github(adtte_data_content)
+        # Load ADSL and ADTTE data from uploaded files
+        if adsl_file is not None and adtte_file is not None:
+            adsl_data = load_data(adsl_file)
+            adtte_data = load_data(adtte_file)
 
-    # Load ADSL and ADTTE data from uploaded files
-    if adsl_file is not None:
-        adsl_data = load_data(adsl_file)
-    if adtte_file is not None:
-        adtte_data = load_data(adtte_file)
+        if 'adsl_data' not in locals() or 'adtte_data' not in locals():
+            return
 
-    # Render content based on selected navigation option and available data
-    if adsl_data is not None and adtte_data is not None:
-        if nav_option == "Raw Data":
-            st.subheader("Raw Data Preview")
-            st.write("ADSL Data:")
-            st.dataframe(adsl_data.head())
-            st.write("ADTTE Data:")
-            st.dataframe(adtte_data.head())
+    # Render content based on selected navigation option
+    if nav_option == "Raw Data":
+        st.subheader("Raw Data Preview")
+        st.write("ADSL Data:")
+        st.dataframe(adsl_data.head())
+        st.write("ADTTE Data:")
+        st.dataframe(adtte_data.head())
 
-        elif nav_option == "Visualization":
-            st.subheader("Boxplot Visualization")
-            subject_choices = {
-                "Age": "AGE",
-                "Baseline BMI": "BMIBL",
-                "Baseline Height": "HEIGHTBL",
-                "Baseline Weight": "WEIGHTBL",
-                "Years of Education": "EDUCLVL"
+    elif nav_option == "Visualization":
+        st.subheader("Boxplot Visualization")
+        subject_choices = {
+            "Age": "AGE",
+            "Baseline BMI": "BMIBL",
+            "Baseline Height": "HEIGHTBL",
+            "Baseline Weight": "WEIGHTBL",
+            "Years of Education": "EDUCLVL"
+        }
+        
+        selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
+
+        if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
+            subject_column = subject_choices[selected_subject]
+
+            # Define colors for treatment groups
+            treatment_colors = {
+                'Placebo': 'blue',
+                'Xanomeline Low Dose': 'green',
+                'Xanomeline High Dose': 'red'
             }
-            
-            selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
 
-            if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
-                subject_column = subject_choices[selected_subject]
+            # Generate boxplot using Plotly
+            fig_box = px.box(
+                adsl_data, 
+                x='TRT01A', 
+                y=subject_column, 
+                title=f"{selected_subject} by Treatment Groups",
+                labels={subject_column: selected_subject, 'TRT01A': 'Treatment'},
+                color='TRT01A',  
+                color_discrete_map=treatment_colors,
+                points='all'
+            )
+            fig_box.update_layout(plot_bgcolor='rgba(255, 255, 255, 0.5)')  # Transparent white background
+            st.plotly_chart(fig_box)
 
-                # Define colors for treatment groups
-                treatment_colors = {
-                    'Placebo': 'blue',
-                    'Xanomeline Low Dose': 'green',
-                    'Xanomeline High Dose': 'purple'
-                }
-
-                # Generate boxplot using Plotly
-                fig_box = px.box(
-                    adsl_data, 
-                    x='TRT01A', 
-                    y=subject_column, 
-                    title=f"{selected_subject} by Treatment Groups",
-                    labels={subject_column: selected_subject, 'TRT01A': 'Treatment'},
-                    color='TRT01A',  
-                    color_discrete_map=treatment_colors,
-                    points='all'
-                )
-                fig_box.update_layout(plot_bgcolor='rgba(255, 255, 255, 0.5)')  # Transparent white background
-                st.plotly_chart(fig_box)
-
-        elif nav_option == "Kaplan-Meier Curve":
-            st.subheader("Kaplan-Meier Curve")
-            km_fig = km_plot(adsl_data, adtte_data)
-            if km_fig is not None:
-                st.plotly_chart(km_fig)
+    elif nav_option == "Kaplan-Meier Curve":
+        st.subheader("Kaplan-Meier Curve")
+        km_fig = km_plot(adsl_data, adtte_data)
+        if km_fig is not None:
+            st.plotly_chart(km_fig)
 
 # Run the app
 if __name__ == "__main__":
