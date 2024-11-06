@@ -124,16 +124,18 @@ def main():
     # Display file upload section only in the "Upload Files" page
     if nav_option == "Upload Files":
         st.subheader("Upload ADSL and ADTTE Files")
-        
-        # File upload for ADSL and ADTTE
-        adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
-        adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
 
         # GitHub URL input for ADSL and ADTTE data
         github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
         github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
                                        "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
+        
+        # File upload for ADSL and ADTTE
+        adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
+        adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
+
+
 
         # Load data from GitHub if the button is clicked
         if st.button("Load ADSL from GitHub"):
