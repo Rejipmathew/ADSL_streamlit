@@ -125,6 +125,17 @@ def main():
     if nav_option == "Upload Files":
         st.subheader("Upload ADSL and ADTTE Files")
 
+                # Load data from GitHub if the button is clicked
+        if st.button("Load ADSL from GitHub"):
+            adsl_data_content = fetch_data_from_github(github_adsl_url)
+            if adsl_data_content:
+                st.session_state.adsl_data = load_data_from_github(adsl_data_content)
+
+        if st.button("Load ADTTE from GitHub"):
+            adtte_data_content = fetch_data_from_github(github_adtte_url)
+            if adtte_data_content:
+                st.session_state.adtte_data = load_data_from_github(adtte_data_content)
+                
         # GitHub URL input for ADSL and ADTTE data
         github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
@@ -136,17 +147,6 @@ def main():
         adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
 
 
-
-        # Load data from GitHub if the button is clicked
-        if st.button("Load ADSL from GitHub"):
-            adsl_data_content = fetch_data_from_github(github_adsl_url)
-            if adsl_data_content:
-                st.session_state.adsl_data = load_data_from_github(adsl_data_content)
-
-        if st.button("Load ADTTE from GitHub"):
-            adtte_data_content = fetch_data_from_github(github_adtte_url)
-            if adtte_data_content:
-                st.session_state.adtte_data = load_data_from_github(adtte_data_content)
 
         # Load ADSL and ADTTE data from uploaded files
         if adsl_file is not None:
