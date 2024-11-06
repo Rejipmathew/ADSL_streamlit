@@ -102,7 +102,7 @@ def main():
         st.subheader("Instructions for Using the App")
         st.write("""
         Welcome to the Demographics and KP-Curve CDISC Visualization App!
-        (Note: Use top '>' to see the option button in mobile app)
+
         **Instructions:**
         1. **Upload Files**: You can upload your own ADSL and ADTTE files in XPT format, or load them directly from a GitHub repository.
         2. **Raw Data**: View the raw data from the uploaded files.
@@ -123,9 +123,15 @@ def main():
 
     # Display file upload section only in the "Upload Files" page
     if nav_option == "Upload Files":
-        st.subheader("Upload ADSL and ADTTE Files")
+        st.subheader("Load Data from GitHub")
+        
+        # GitHub URL input for ADSL and ADTTE data
+        github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
+                                      "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
+        github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
+                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
 
-                # Load data from GitHub if the button is clicked
+        # Load data from GitHub if the button is clicked
         if st.button("Load ADSL from GitHub"):
             adsl_data_content = fetch_data_from_github(github_adsl_url)
             if adsl_data_content:
@@ -135,18 +141,12 @@ def main():
             adtte_data_content = fetch_data_from_github(github_adtte_url)
             if adtte_data_content:
                 st.session_state.adtte_data = load_data_from_github(adtte_data_content)
-                
-        # GitHub URL input for ADSL and ADTTE data
-        github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
-                                      "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
-        github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
-                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
-        
+
+        st.subheader("Upload ADSL and ADTTE Files")
+
         # File upload for ADSL and ADTTE
         adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
         adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
-
-
 
         # Load ADSL and ADTTE data from uploaded files
         if adsl_file is not None:
