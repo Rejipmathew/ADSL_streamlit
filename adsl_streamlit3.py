@@ -95,7 +95,31 @@ def main():
     st.title("Demographics and KP-Curve CDISC Visualization")
 
     # Sidebar navigation with radio buttons
-    nav_option = st.sidebar.radio("Select an option", ["Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    nav_option = st.sidebar.radio("Select an option", ["Instructions", "Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
+
+    # Instructions page as the default
+    if nav_option == "Instructions":
+        st.subheader("Instructions for Using the App")
+        st.write("""
+        Welcome to the Demographics and KP-Curve CDISC Visualization App!
+
+        **Instructions:**
+        1. **Upload Files**: You can upload your own ADSL and ADTTE files in XPT format, or load them directly from a GitHub repository.
+        2. **Raw Data**: View the raw data from the uploaded files.
+        3. **Visualization**: Create a boxplot visualization for different subject data like Age, Baseline BMI, etc., across different treatment groups.
+        4. **Kaplan-Meier Curve**: Generate a Kaplan-Meier survival curve for the treatment groups based on the data you have uploaded.
+
+        The app supports two ways of uploading data:
+        - By uploading the files manually.
+        - By fetching the data from GitHub using the provided URLs.
+
+        **Important Notes**:
+        - Make sure to upload both the ADSL and ADTTE data for the Kaplan-Meier curve to work.
+        - Ensure the data is from the same study for the analysis to be valid.
+
+        Use the options in the sidebar to navigate between different sections of the app.
+        """)
+        return
 
     # Display file upload section only in the "Upload Files" page
     if nav_option == "Upload Files":
