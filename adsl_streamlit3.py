@@ -77,7 +77,7 @@ def km_plot(adsl, adtte):
 
 # Streamlit app
 def main():
-    st.title("ADSL and ADTTE Data Visualization App")
+    st.title("CLinical Trial CDISC Subject Level Data Visualization App")
     
     # Sidebar for navigation
     page = st.sidebar.radio("Navigation", ["Upload Data", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
