@@ -77,48 +77,62 @@ def km_plot(adsl, adtte):
 
 # Streamlit app
 def main():
-    st.title("Clinical Trial Subject Level Data Visualization App")
+    st.title("ADSL and ADTTE Data Visualization App")
     
-    # Navigation sidebar
-    nav_option = st.sidebar.selectbox("Select an option", ["Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    # Sidebar for navigation
+    page = st.sidebar.radio("Navigation", ["Upload Data", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    
+    # Page for uploading data
+    if page == "Upload Data":
+        st.subheader("Upload ADSL and ADTTE Datasets")
+        
+        # File uploader for ADSL and ADTTE data
+        adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
+        adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
 
-    # File uploader for ADSL and ADTTE data
-    adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
-    adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
+        # GitHub URL input for ADSL and ADTTE data
+        github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
+                                        "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
+        github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
+                                         "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
+        
+        # Load data based on the input method
+        global adsl_data, adtte_data
+        adsl_data, adtte_data = None, None
 
-    # GitHub URL input for ADSL and ADTTE data
-    github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
-                                      "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
-    github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
-                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
+        # Load data from GitHub if the button is clicked
+        if st.button("Load ADSL from GitHub"):
+            adsl_data = load_data_from_github(github_adsl_url)
 
-    # Load data based on the input method
-    adsl_data, adtte_data = None, None
+        if st.button("Load ADTTE from GitHub"):
+            adtte_data = load_data_from_github(github_adtte_url)
 
-    # Load data from GitHub if the button is clicked
-    if st.button("Load ADSL from GitHub"):
-        adsl_data = load_data_from_github(github_adsl_url)
+        # Load ADSL and ADTTE data from uploaded files
+        if adsl_file is not None:
+            adsl_data = load_data(adsl_file)
+        if adtte_file is not None:
+            adtte_data = load_data(adtte_file)
 
-    if st.button("Load ADTTE from GitHub"):
-        adtte_data = load_data_from_github(github_adtte_url)
-
-    # Load ADSL and ADTTE data from uploaded files
-    if adsl_file is not None:
-        adsl_data = load_data(adsl_file)
-    if adtte_file is not None:
-        adtte_data = load_data(adtte_file)
-
-    # Render content based on selected navigation option and available data
-    if adsl_data is not None and adtte_data is not None:
-        if nav_option == "Raw Data":
-            st.subheader("Raw Data Preview")
+        if adsl_data is not None and adtte_data is not None:
+            st.success("Data loaded successfully!")
+    
+    # Page for displaying raw data
+    elif page == "Raw Data":
+        st.subheader("Raw Data Preview")
+        
+        if 'adsl_data' in globals() and 'adtte_data' in globals() and adsl_data is not None and adtte_data is not None:
             st.write("ADSL Data:")
             st.dataframe(adsl_data.head())
             st.write("ADTTE Data:")
             st.dataframe(adtte_data.head())
-
-        elif nav_option == "Visualization":
-            st.subheader("Boxplot Visualization")
+        else:
+            st.warning("No data loaded. Please go to 'Upload Data' and load the datasets first.")
+    
+    # Page for boxplot visualization
+    elif page == "Visualization":
+        st.subheader("Boxplot Visualization")
+        
+        if 'adsl_data' in globals() and adsl_data is not None:
             subject_choices = {
                 "Age": "AGE",
                 "Baseline BMI": "BMIBL",
@@ -152,14 +166,19 @@ def main():
                 )
                 fig_box.update_layout(plot_bgcolor='rgba(255, 255, 255, 0.5)')  # Transparent white background
                 st.plotly_chart(fig_box)
-
-        elif nav_option == "Kaplan-Meier Curve":
-            st.subheader("Kaplan-Meier Curve")
+        else:
+            st.warning("No ADSL data loaded. Please go to 'Upload Data' and load the datasets first.")
+    
+    # Page for Kaplan-Meier plot
+    elif page == "Kaplan-Meier Curve":
+        st.subheader("Kaplan-Meier Curve")
+        
+        if 'adsl_data' in globals() and 'adtte_data' in globals() and adsl_data is not None and adtte_data is not None:
             km_fig = km_plot(adsl_data, adtte_data)
             if km_fig is not None:
                 st.plotly_chart(km_fig)
-    else:
-        st.warning("Please upload both ADSL and ADTTE datasets or provide valid GitHub URLs.")
+        else:
+            st.warning("No data loaded. Please go to 'Upload Data' and load the datasets first.")
 
 # Run the app
 if __name__ == "__main__":
