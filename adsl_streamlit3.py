@@ -117,42 +117,38 @@ def main():
     )
 
     st.title("ADSL and ADTTE Data Visualization App")
+    
+    # Navigation sidebar
+    nav_option = st.sidebar.selectbox("Select an option", ["Raw Data", "Visualization", "Kaplan-Meier Curve"])
 
-    # Sidebar navigation with radio buttons
-    nav_option = st.sidebar.radio("Select an option", ["Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    # File uploader for ADSL and ADTTE data
+    adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
+    adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
 
-    # Display file upload section only in the "Upload Files" page
-    if nav_option == "Upload Files":
-        st.subheader("Upload ADSL and ADTTE Files")
-        
-        # File upload for ADSL and ADTTE
-        adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
-        adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
-
-        # GitHub URL input for ADSL and ADTTE data
-        github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
+    # GitHub URL input for ADSL and ADTTE data
+    github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
-        github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
+    github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
                                        "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
 
-        # Load data from GitHub if the button is clicked
-        if st.button("Load ADSL from GitHub"):
-            adsl_data_content = fetch_data_from_github(github_adsl_url)
-            if adsl_data_content:
-                adsl_data = load_data_from_github(adsl_data_content)
+    # Load data from GitHub if the button is clicked
+    if st.button("Load ADSL from GitHub"):
+        adsl_data_content = fetch_data_from_github(github_adsl_url)
+        if adsl_data_content:
+            adsl_data = load_data_from_github(adsl_data_content)
 
-        if st.button("Load ADTTE from GitHub"):
-            adtte_data_content = fetch_data_from_github(github_adtte_url)
-            if adtte_data_content:
-                adtte_data = load_data_from_github(adtte_data_content)
+    if st.button("Load ADTTE from GitHub"):
+        adtte_data_content = fetch_data_from_github(github_adtte_url)
+        if adtte_data_content:
+            adtte_data = load_data_from_github(adtte_data_content)
 
-        # Load ADSL and ADTTE data from uploaded files
-        if adsl_file is not None and adtte_file is not None:
-            adsl_data = load_data(adsl_file)
-            adtte_data = load_data(adtte_file)
+    # Load ADSL and ADTTE data from uploaded files
+    if adsl_file is not None and adtte_file is not None:
+        adsl_data = load_data(adsl_file)
+        adtte_data = load_data(adtte_file)
 
-        if 'adsl_data' not in locals() or 'adtte_data' not in locals():
-            return
+    if 'adsl_data' not in locals() or 'adtte_data' not in locals():
+        return
 
     # Render content based on selected navigation option
     if nav_option == "Raw Data":
