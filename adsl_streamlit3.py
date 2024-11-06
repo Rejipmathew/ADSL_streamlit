@@ -30,6 +30,15 @@ def load_data_from_github(url):
         st.error(f"Failed to fetch data from GitHub: {e}")
         return None
 
+# Cached function to store data after upload or GitHub fetch
+@st.cache_data
+def cache_adsl_data(data):
+    return data
+
+@st.cache_data
+def cache_adtte_data(data):
+    return data
+
 # Function to create KM plot
 def km_plot(adsl, adtte):
     anl = adsl[
@@ -79,46 +88,68 @@ def km_plot(adsl, adtte):
 def main():
     st.title("ADSL and ADTTE Data Visualization App")
     
-    # Navigation sidebar
-    nav_option = st.sidebar.selectbox("Select an option", ["Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    # Sidebar for navigation
+    page = st.sidebar.radio("Navigation", ["Upload Data", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
+    
+    # Page for uploading data
+    if page == "Upload Data":
+        st.subheader("Upload ADSL and ADTTE Datasets")
+        
+        # File uploader for ADSL and ADTTE data
+        adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
+        adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
 
-    # File uploader for ADSL and ADTTE data
-    adsl_file = st.file_uploader("Upload ADSL .xpt file", type="xpt", key='adsl')
-    adtte_file = st.file_uploader("Upload ADTTE .xpt file", type="xpt", key='adtte')
+        # GitHub URL input for ADSL and ADTTE data
+        github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
+                                        "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
+        github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
+                                         "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
+        
+        # Load data based on the input method
+        if st.button("Load ADSL from GitHub"):
+            adsl_data = load_data_from_github(github_adsl_url)
+            if adsl_data is not None:
+                cache_adsl_data(adsl_data)
+                st.success("ADSL data loaded and cached successfully!")
 
-    # GitHub URL input for ADSL and ADTTE data
-    github_adsl_url = st.text_input("GitHub URL for ADSL .xpt file", 
-                                      "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADSL.XPT")
-    github_adtte_url = st.text_input("GitHub URL for ADTTE .xpt file", 
-                                       "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/ADTTE.XPT")
+        if st.button("Load ADTTE from GitHub"):
+            adtte_data = load_data_from_github(github_adtte_url)
+            if adtte_data is not None:
+                cache_adtte_data(adtte_data)
+                st.success("ADTTE data loaded and cached successfully!")
 
-    # Load data based on the input method
-    adsl_data, adtte_data = None, None
-
-    # Load data from GitHub if the button is clicked
-    if st.button("Load ADSL from GitHub"):
-        adsl_data = load_data_from_github(github_adsl_url)
-
-    if st.button("Load ADTTE from GitHub"):
-        adtte_data = load_data_from_github(github_adtte_url)
-
-    # Load ADSL and ADTTE data from uploaded files
-    if adsl_file is not None:
-        adsl_data = load_data(adsl_file)
-    if adtte_file is not None:
-        adtte_data = load_data(adtte_file)
-
-    # Render content based on selected navigation option and available data
-    if adsl_data is not None and adtte_data is not None:
-        if nav_option == "Raw Data":
-            st.subheader("Raw Data Preview")
+        # Load ADSL and ADTTE data from uploaded files
+        if adsl_file is not None:
+            adsl_data = load_data(adsl_file)
+            cache_adsl_data(adsl_data)
+            st.success("ADSL data uploaded and cached successfully!")
+        if adtte_file is not None:
+            adtte_data = load_data(adtte_file)
+            cache_adtte_data(adtte_data)
+            st.success("ADTTE data uploaded and cached successfully!")
+    
+    # Page for displaying raw data
+    elif page == "Raw Data":
+        st.subheader("Raw Data Preview")
+        
+        adsl_data = cache_adsl_data(None)
+        adtte_data = cache_adtte_data(None)
+        
+        if adsl_data is not None and adtte_data is not None:
             st.write("ADSL Data:")
             st.dataframe(adsl_data.head())
             st.write("ADTTE Data:")
             st.dataframe(adtte_data.head())
-
-        elif nav_option == "Visualization":
-            st.subheader("Boxplot Visualization")
+        else:
+            st.warning("No data loaded. Please go to 'Upload Data' and load the datasets first.")
+    
+    # Page for boxplot visualization
+    elif page == "Visualization":
+        st.subheader("Boxplot Visualization")
+        
+        adsl_data = cache_adsl_data(None)
+        
+        if adsl_data is not None:
             subject_choices = {
                 "Age": "AGE",
                 "Baseline BMI": "BMIBL",
@@ -152,15 +183,24 @@ def main():
                 )
                 fig_box.update_layout(plot_bgcolor='rgba(255, 255, 255, 0.5)')  # Transparent white background
                 st.plotly_chart(fig_box)
-
-        elif nav_option == "Kaplan-Meier Curve":
-            st.subheader("Kaplan-Meier Curve")
+        else:
+            st.warning("No ADSL data loaded. Please go to 'Upload Data' and load the datasets first.")
+    
+    # Page for Kaplan-Meier plot
+    elif page == "Kaplan-Meier Curve":
+        st.subheader("Kaplan-Meier Curve")
+        
+        adsl_data = cache_adsl_data(None)
+        adtte_data = cache_adtte_data(None)
+        
+        if adsl_data is not None and adtte_data is not None:
             km_fig = km_plot(adsl_data, adtte_data)
             if km_fig is not None:
                 st.plotly_chart(km_fig)
-    else:
-        st.warning("Please upload both ADSL and ADTTE datasets or provide valid GitHub URLs.")
+        else:
+            st.warning("No data loaded. Please go to 'Upload Data' and load the datasets first.")
 
 # Run the app
 if __name__ == "__main__":
     main()
+``
