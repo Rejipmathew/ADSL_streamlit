@@ -84,11 +84,6 @@ def km_plot(adsl, adtte):
     fig.add_shape(type="line", x0=0, y0=0.5, x1=1, y1=0.5, line=dict(color="gray", dash="dash"))
     return fig
 
-# Function to handle page transition
-def next_page(page):
-    st.session_state.current_page = page
-    st.experimental_rerun()
-
 # Streamlit app
 def main():
     # Initialize session state for data storage if it does not exist
@@ -96,17 +91,12 @@ def main():
         st.session_state.adsl_data = None
     if "adtte_data" not in st.session_state:
         st.session_state.adtte_data = None
-    
-    # Define the page options
-    options = ["Instructions", "Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"]
-    
-    # Session state for tracking the current page
-    if "current_page" not in st.session_state:
-        st.session_state.current_page = "Instructions"  # Default page
 
-    # Sidebar navigation
-    nav_option = st.sidebar.radio("Select an option", options, index=options.index(st.session_state.current_page))
-    
+    st.title("Demographics and KP-Curve CDISC Visualization")
+
+    # Sidebar navigation with radio buttons
+    nav_option = st.sidebar.radio("Select an option", ["Instructions", "Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
+
     # Instructions page as the default
     if nav_option == "Instructions":
         st.subheader("Instructions for Using the App")
@@ -129,13 +119,10 @@ def main():
 
         Use the options in the sidebar to navigate between different sections of the app.
         """)
+        return
 
-        # Next Explore button
-        if st.button("Next Explore"):
-            next_page("Upload Files")
-
-    # Upload Files page
-    elif nav_option == "Upload Files":
+    # Display file upload section only in the "Upload Files" page
+    if nav_option == "Upload Files":
         st.subheader("Load Data from GitHub")
         
         # GitHub URL input for ADSL and ADTTE data
@@ -151,7 +138,7 @@ def main():
                 st.session_state.adsl_data = load_data_from_github(adsl_data_content)
 
         if st.button("Load ADTTE from GitHub"):
-            adtte_data_content = fetch_data_from_github(adtte_adtte_url)
+            adtte_data_content = fetch_data_from_github(github_adtte_url)
             if adtte_data_content:
                 st.session_state.adtte_data = load_data_from_github(adtte_data_content)
 
@@ -167,12 +154,8 @@ def main():
         if adtte_file is not None:
             st.session_state.adtte_data = load_data(adtte_file)
 
-        # Next Explore button
-        if st.button("Next Explore"):
-            next_page("Raw Data")
-
-    # Raw Data page
-    elif nav_option == "Raw Data":
+    # Render content based on selected navigation option
+    if nav_option == "Raw Data":
         st.subheader("Raw Data Preview")
         if st.session_state.adsl_data is not None and st.session_state.adtte_data is not None:
             st.write("ADSL Data:")
@@ -181,12 +164,7 @@ def main():
             st.dataframe(st.session_state.adtte_data.head())
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
-        
-        # Next Explore button
-        if st.button("Next Explore"):
-            next_page("Visualization")
 
-    # Visualization page
     elif nav_option == "Visualization":
         st.subheader("Boxplot Visualization")
         if st.session_state.adsl_data is not None:
@@ -223,12 +201,9 @@ def main():
                 )
                 fig_box.update_layout(plot_bgcolor='rgba(255, 255, 255, 0.5)')  # Transparent white background
                 st.plotly_chart(fig_box)
+        else:
+            st.warning("Please upload or load ADSL data.")
 
-        # Next Explore button
-        if st.button("Next Explore"):
-            next_page("Kaplan-Meier Curve")
-
-    # Kaplan-Meier Curve page
     elif nav_option == "Kaplan-Meier Curve":
         st.subheader("Kaplan-Meier Curve")
         if st.session_state.adsl_data is not None and st.session_state.adtte_data is not None:
@@ -237,7 +212,6 @@ def main():
                 st.plotly_chart(fig_km)
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
-        
-    # Start app execution
+
 if __name__ == "__main__":
     main()
