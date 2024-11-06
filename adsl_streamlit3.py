@@ -84,6 +84,11 @@ def km_plot(adsl, adtte):
     fig.add_shape(type="line", x0=0, y0=0.5, x1=1, y1=0.5, line=dict(color="gray", dash="dash"))
     return fig
 
+# Function to handle page transition
+def next_page(page):
+    st.session_state.current_page = page
+    st.experimental_rerun()
+
 # Streamlit app
 def main():
     # Initialize session state for data storage if it does not exist
@@ -176,7 +181,7 @@ def main():
             st.dataframe(st.session_state.adtte_data.head())
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
-
+        
         # Next Explore button
         if st.button("Next Explore"):
             next_page("Visualization")
@@ -232,11 +237,7 @@ def main():
                 st.plotly_chart(fig_km)
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
-
-    # Function to move to next page
-    def next_page(page):
-        st.session_state.current_page = page
-        st.experimental_rerun()
-
+        
+    # Start app execution
 if __name__ == "__main__":
     main()
