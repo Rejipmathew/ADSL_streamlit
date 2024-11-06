@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import pyreadstat
 import tempfile
 import requests
@@ -76,51 +75,16 @@ def km_plot(adsl, adtte):
 
 # Streamlit app
 def main():
-    st.markdown(
-    """
-    <style>
-    .reportview-container .markdown-text-container {
-        font-family: monospace;
-    }
-    .sidebar .sidebar-content {
-        background-image: linear-gradient(#2e7bcf,#2e7bcf);
-        color: white;
-    }
-    .Widget>label {
-        color: white;
-        font-family: monospace;
-    }
-    [class^="st-b"]  {
-        color: white;
-        font-family: monospace;
-    }
-    .st-bb {
-        background-color: transparent;
-    }
-    .st-at {
-        background-color: #0c0080;
-    }
-    footer {
-        font-family: monospace;
-    }
-    .reportview-container .main footer, .reportview-container .main footer a {
-        color: #0c0080;
-    }
-    header .decoration {
-        background-image: "https://raw.githubusercontent.com/rejipmathew/ADSL_streamlit/main/clinicaltrial_landing.jpg";
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-    )
+    # Initialize session state variables for data if not present
+    if "adsl_data" not in st.session_state:
+        st.session_state["adsl_data"] = None
+    if "adtte_data" not in st.session_state:
+        st.session_state["adtte_data"] = None
 
-    st.title("ADSL and ADTTE Data Visualization App")
+    st.title("CDISC Subject Level Data Visualization App")
 
     # Sidebar navigation with radio buttons
     nav_option = st.sidebar.radio("Select an option", ["Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"])
-
-    # Initialize variables for data
-    adsl_data, adtte_data = None, None
 
     # Display file upload section only in the "Upload Files" page
     if nav_option == "Upload Files":
@@ -140,32 +104,33 @@ def main():
         if st.button("Load ADSL from GitHub"):
             adsl_data_content = fetch_data_from_github(github_adsl_url)
             if adsl_data_content:
-                adsl_data = load_data_from_github(adsl_data_content)
+                st.session_state["adsl_data"] = load_data_from_github(adsl_data_content)
 
         if st.button("Load ADTTE from GitHub"):
             adtte_data_content = fetch_data_from_github(github_adtte_url)
             if adtte_data_content:
-                adtte_data = load_data_from_github(adtte_data_content)
+                st.session_state["adtte_data"] = load_data_from_github(adtte_data_content)
 
         # Load ADSL and ADTTE data from uploaded files
-        if adsl_file is not None and adtte_file is not None:
-            adsl_data = load_data(adsl_file)
-            adtte_data = load_data(adtte_file)
+        if adsl_file is not None:
+            st.session_state["adsl_data"] = load_data(adsl_file)
+        if adtte_file is not None:
+            st.session_state["adtte_data"] = load_data(adtte_file)
 
     # Render content based on selected navigation option
     if nav_option == "Raw Data":
         st.subheader("Raw Data Preview")
-        if adsl_data is not None and adtte_data is not None:
+        if st.session_state["adsl_data"] is not None and st.session_state["adtte_data"] is not None:
             st.write("ADSL Data:")
-            st.dataframe(adsl_data.head())
+            st.dataframe(st.session_state["adsl_data"].head())
             st.write("ADTTE Data:")
-            st.dataframe(adtte_data.head())
+            st.dataframe(st.session_state["adtte_data"].head())
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
 
     elif nav_option == "Visualization":
         st.subheader("Boxplot Visualization")
-        if adsl_data is not None:
+        if st.session_state["adsl_data"] is not None:
             subject_choices = {
                 "Age": "AGE",
                 "Baseline BMI": "BMIBL",
@@ -176,19 +141,19 @@ def main():
             
             selected_subject = st.selectbox("Select Subject Data", options=list(subject_choices.keys()))
 
-            if selected_subject and subject_choices[selected_subject] in adsl_data.columns:
+            if selected_subject and subject_choices[selected_subject] in st.session_state["adsl_data"].columns:
                 subject_column = subject_choices[selected_subject]
 
                 # Define colors for treatment groups
                 treatment_colors = {
                     'Placebo': 'blue',
                     'Xanomeline Low Dose': 'green',
-                    'Xanomeline High Dose': 'red'
+                    'Xanomeline High Dose': 'purple'
                 }
 
                 # Generate boxplot using Plotly
                 fig_box = px.box(
-                    adsl_data, 
+                    st.session_state["adsl_data"], 
                     x='TRT01A', 
                     y=subject_column, 
                     title=f"{selected_subject} by Treatment Groups",
@@ -204,8 +169,8 @@ def main():
 
     elif nav_option == "Kaplan-Meier Curve":
         st.subheader("Kaplan-Meier Curve")
-        if adsl_data is not None and adtte_data is not None:
-            km_fig = km_plot(adsl_data, adtte_data)
+        if st.session_state["adsl_data"] is not None and st.session_state["adtte_data"] is not None:
+            km_fig = km_plot(st.session_state["adsl_data"], st.session_state["adtte_data"])
             if km_fig is not None:
                 st.plotly_chart(km_fig)
         else:
