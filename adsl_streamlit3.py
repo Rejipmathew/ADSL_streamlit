@@ -91,13 +91,17 @@ def main():
         st.session_state.adsl_data = None
     if "adtte_data" not in st.session_state:
         st.session_state.adtte_data = None
-
-    st.title("Demographics and KP-Curve CDISC Visualization")
-
-    # Sidebar navigation with radio buttons
+    
+    # Define the page options
     options = ["Instructions", "Upload Files", "Raw Data", "Visualization", "Kaplan-Meier Curve"]
-    nav_option = st.sidebar.radio("Select an option", options)
+    
+    # Session state for tracking the current page
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = "Instructions"  # Default page
 
+    # Sidebar navigation
+    nav_option = st.sidebar.radio("Select an option", options, index=options.index(st.session_state.current_page))
+    
     # Instructions page as the default
     if nav_option == "Instructions":
         st.subheader("Instructions for Using the App")
@@ -123,7 +127,7 @@ def main():
 
         # Next Explore button
         if st.button("Next Explore"):
-            st.session_state.nav_option = "Upload Files"  # Automatically go to the next section
+            next_page("Upload Files")
 
     # Upload Files page
     elif nav_option == "Upload Files":
@@ -160,7 +164,7 @@ def main():
 
         # Next Explore button
         if st.button("Next Explore"):
-            st.session_state.nav_option = "Raw Data"  # Automatically go to the next section
+            next_page("Raw Data")
 
     # Raw Data page
     elif nav_option == "Raw Data":
@@ -175,7 +179,7 @@ def main():
 
         # Next Explore button
         if st.button("Next Explore"):
-            st.session_state.nav_option = "Visualization"  # Automatically go to the next section
+            next_page("Visualization")
 
     # Visualization page
     elif nav_option == "Visualization":
@@ -214,12 +218,10 @@ def main():
                 )
                 fig_box.update_layout(plot_bgcolor='rgba(255, 255, 255, 0.5)')  # Transparent white background
                 st.plotly_chart(fig_box)
-        else:
-            st.warning("Please upload or load ADSL data.")
 
         # Next Explore button
         if st.button("Next Explore"):
-            st.session_state.nav_option = "Kaplan-Meier Curve"  # Automatically go to the next section
+            next_page("Kaplan-Meier Curve")
 
     # Kaplan-Meier Curve page
     elif nav_option == "Kaplan-Meier Curve":
@@ -231,7 +233,10 @@ def main():
         else:
             st.warning("Please upload or load both ADSL and ADTTE data.")
 
-        # No "Next Explore" button on the last page
+    # Function to move to next page
+    def next_page(page):
+        st.session_state.current_page = page
+        st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
